@@ -1,5 +1,6 @@
 package com.example.a2048;
 
+import android.util.Log;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -15,6 +16,7 @@ public class Tablero {
     public Tablero(int height, int width, TableLayout tableLayout) {
         this.tableLayout = tableLayout;
         this.initBoard(height, width);
+        this.conectarMatrizEnVista();
     }
 
     public void initBoard(int height, int width) {
@@ -28,6 +30,7 @@ public class Tablero {
         addCasilla();
 
     }
+
     public void conectarMatrizEnVista() {
         for (int i = 0; i < 4; i++) {
             TableRow row = (TableRow) tableLayout.getChildAt(i);
@@ -43,24 +46,25 @@ public class Tablero {
         }
 
     }
+
     public void addCasilla() {
-            Random ran = new Random();
-            int x, y;
-            x = ran.nextInt(4);
-            y = ran.nextInt(4);
-            boolean empty = false;
+        Random ran = new Random();
+        int x, y;
+        x = ran.nextInt(4);
+        y = ran.nextInt(4);
+        boolean empty = false;
 
-            while (!empty) {
-                if (board[x][y].getValor() == 0) {
-                    board[x][y].setValor(2);
-                    empty = true;
-                }else{
-                    x = ran.nextInt(4);
-                    y = ran.nextInt(4);
-                }
+        while (!empty) {
+            if (board[x][y].getValor() == 0) {
+                board[x][y].setValor(2);
+                empty = true;
+            } else {
+                x = ran.nextInt(4);
+                y = ran.nextInt(4);
             }
-
         }
+
+    }
 
     public void up() {
         if (!gameOver) {
@@ -75,6 +79,7 @@ public class Tablero {
                     }
                 }
             }
+            rePintar();
         }
     }
 
@@ -116,7 +121,9 @@ public class Tablero {
                     }
                 }
             }
+            rePintar();
         }
+
     }
 
     private void moveDown(int i, int j) {
@@ -140,73 +147,98 @@ public class Tablero {
         }
     }
 
-    public void left(){
-        if(!gameOver){
-            for(int i=0;i<board.length;i++){
+    public void left() {
+        if (!gameOver) {
+            for (int i = 0; i < board.length; i++) {
                 //desde la 2a columna de cada fila hasta la última
-                for(int j=1;j<board[i].length;j++){
-                    if(board[i][j].getValor()!=0){
-                        moveLeft(i,j);
-                        fusionLeft(i,j);
+                for (int j = 1; j < board[i].length; j++) {
+                    if (board[i][j].getValor() != 0) {
+                        moveLeft(i, j);
+                        fusionLeft(i, j);
 
                     }
                 }
             }
+            rePintar();
         }
     }
-    private void moveLeft(int i, int j){
+
+    private void moveLeft(int i, int j) {
         //Lo que cambian en este caso son las j(columnas) por eso k=j
         //k-- porque nos movemos de derecha a izquierda en la fila
-        for(int k=j; k>1 && board[i][k-1].getValor()==0; k--){
-            board[i][k-1].setValor(board[i][k].getValor());
+        for (int k = j; k >= 1 && board[i][k - 1].getValor() == 0; k--) {
+            board[i][k - 1].setValor(board[i][k].getValor());
             board[i][k].setValor(0);
         }
 
     }
-    private void fusionLeft(int i, int j){
+
+    private void fusionLeft(int i, int j) {
         // j>1 asegura que estamos en una columna que tiene al menos una columna a la izquierda para la fusión
         // y comprobamos que el valor de la casilla actual y la de la izquierda sean iguales para poder fusionarlas
-        if(j>1 && board[i][j-1].getValor()==board[i][j].getValor()){
-            board[i][j-1].setValor(board[i][j].getValor()*2);
+        if (j > 0 && board[i][j - 1].getValor() == board[i][j].getValor()) {
+            board[i][j - 1].setValor(board[i][j].getValor() * 2);
             board[i][j].setValor(0);
-            score+=board[i][j-1].getValor();
+            score += board[i][j - 1].getValor();
         }
 
     }
 
-    public void right(){
-        if(!gameOver){
-            for(int i=0;i<board.length;i++){
+    public void right() {
+        if (!gameOver) {
+            for (int i = 0; i < board.length; i++) {
                 //empezamos en la penultima columna
                 //itera desde la penultima columna hasta la primera (j>=0)
                 //se mueve de derecha a izquierda en la fila por eso j--
-                for(int j=board[i].length-2;j>=0;j--){
-                    if(board[i][j].getValor()!=0){
-                        moveRight(i,j);
-                        fusionRight(i,j);
+                for (int j = board[i].length - 2; j >= 0; j--) {
+                    if (board[i][j].getValor() != 0) {
+                        moveRight(i, j);
+                        fusionRight(i, j);
 
                     }
                 }
             }
+            rePintar();
         }
     }
-    private void moveRight(int i, int j){
+
+    private void moveRight(int i, int j) {
         // La diferencia en el incremento/decremento de las variables k refleja la dirección del movimiento en cada caso
         //k < board.length - 1, en vez de -2 porque asi nos aseguramos de que hay una columna válida a la derecha para mover o fusionar.
-        for(int k=j;k<board.length-1 && board[i][k+1].getValor()==0;k++){
-            board[i][k+1].setValor(board[i][k].getValor());
+        for (int k = j; k < board.length - 1 && board[i][k + 1].getValor() == 0; k++) {
+            board[i][k + 1].setValor(board[i][k].getValor());
             board[i][k].setValor(0);
         }
 
     }
-    private void fusionRight(int i, int j){
-        if(j<board.length-1 && board[i][j+1].getValor()==board[i][j].getValor()){
-            board[i][j+1].setValor(board[i][j].getValor()*2);
-            board[i][j].setValor(0);
-            score+=board[i][j+1].getValor();
 
+    private void fusionRight(int i, int j) {
+        if (j < board.length - 1 && board[i][j + 1].getValor() == board[i][j].getValor()) {
+            board[i][j + 1].setValor(board[i][j].getValor() * 2);
+            board[i][j].setValor(0);
+            score += board[i][j + 1].getValor();
+        }
     }
-}}
+
+    private void rePintar(){
+        addCasilla();
+        conectarMatrizEnVista();
+        Log.d( "2048",this.toString());
+    }
+
+    @Override
+    public String toString() {
+        String s = "";
+        for (int i = 0; i < board.length; i++) {
+            s += "|";
+            for (int j = 0; j < board[i].length; j++) {
+                s += board[i][j].getValor() + "|";
+            }
+            s += "\n";
+        }
+        return s;
+    }
+}
 
 
 
